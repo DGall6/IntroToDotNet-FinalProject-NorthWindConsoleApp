@@ -12,10 +12,14 @@ logger.Info("Program started");
 
 do
 {
-    Console.WriteLine("1) Display categories");
-    Console.WriteLine("2) Add category");
+    Console.WriteLine("1) Display Categories");
+    Console.WriteLine("2) Add Category");
     Console.WriteLine("3) Display Category and related products");
     Console.WriteLine("4) Display all Categories and their related products");
+    Console.WriteLine("5) Add Product");
+    Console.WriteLine("6) Edit Product");
+    Console.WriteLine("7) Display Products");
+    Console.WriteLine("8) Display Specific Product Information");
     Console.WriteLine("Enter to quit");
     string? choice = Console.ReadLine();
     Console.Clear();
@@ -66,7 +70,8 @@ do
             else
             {
                 logger.Info("Validation passed");
-                // TODO: save category to db
+                db.AddCategory(category);
+                logger.Info($"Category {category.CategoryName} successfully added");
             }
         }
         if (!isValid)
@@ -111,6 +116,11 @@ do
             }
         }
     }
+    else if (choice == "5")
+    {
+        
+    }
+
     else if (String.IsNullOrEmpty(choice))
     {
         break;
