@@ -118,9 +118,68 @@ do
     }
     else if (choice == "5")
     {
-        
-    }
+        // Add product
+        Product product = new();
+        Console.WriteLine("Enter Product Name:");
+        product.ProductName = Console.ReadLine()!;
 
+        var db = new DataContext();
+        var query = db.Categories.OrderBy(p => p.CategoryId);
+        Console.WriteLine($"Select the category you want to add {product.ProductName} to");
+
+        Console.ForegroundColor = ConsoleColor.DarkRed;
+        foreach (var item in query)
+        {
+            Console.WriteLine($"{item.CategoryId}) {item.CategoryName}");
+        }
+        Console.ForegroundColor = ConsoleColor.White;
+        int id = int.Parse(Console.ReadLine()!);
+        Console.Clear();
+        logger.Info($"CategoryId {id} selected");
+        product.Category = db.Categories.FirstOrDefault(c => c.CategoryId == id)!;
+        product.CategoryId = id;
+        
+        ValidationContext context = new ValidationContext(product, null, null);
+        List<ValidationResult> results = new List<ValidationResult>();
+
+        var isValid = Validator.TryValidateObject(product, context, results, true);
+        if (isValid)
+        {
+            // check for unique name
+            if (db.Products.Any(p => p.ProductName == product.ProductName))
+            {
+                // generate validation error
+                isValid = false;
+                results.Add(new ValidationResult("Name exists", ["ProductName"]));
+            }
+            else
+            {
+                logger.Info("Validation passed");
+                db.AddProduct(product);
+                logger.Info($"Product {product.ProductName} successfully added to {product.Category}");
+            }
+        }
+        if (!isValid)
+        {
+            foreach (var result in results)
+            {
+                logger.Error($"{result.MemberNames.First()} : {result.ErrorMessage}");
+            }
+        }
+    }
+    else if (choice == "6")
+    {
+        // Edit Product
+    }
+    else if (choice == "7")
+    {
+        // Display products
+
+    }
+    else if (choice == "8")
+    {
+        // Display specific product
+    }
     else if (String.IsNullOrEmpty(choice))
     {
         break;
