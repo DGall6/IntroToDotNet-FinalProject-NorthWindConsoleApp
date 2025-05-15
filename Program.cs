@@ -381,7 +381,12 @@ do
         if (int.TryParse(productDisplayChoice, out int id))
         {
             logger.Info($"Product #{id} selected");
-            Product? product = db.Products.FirstOrDefault(p => p.ProductId == id)!;
+            Product? product = db.Products
+            // include fields that contain another object
+                .Include(p => p.Category)
+                .Include(p => p.Supplier)
+                .Include(p => p.OrderDetails)
+                .FirstOrDefault(p => p.ProductId == id)!;
             if (product == null)
             {
                 logger.Error($"Product #{productDisplayChoice} not found");
@@ -389,16 +394,57 @@ do
             else
             {
                 Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine($"Product ID: {product.ProductId}");
-                Console.WriteLine($"Product Name: {product.ProductName}");
-                Console.WriteLine($"Supplier ID: {product.SupplierId}");
-                Console.WriteLine($"Category ID: {product.CategoryId}");
-                Console.WriteLine($"Quantity: {product.QuantityPerUnit}");
-                Console.WriteLine($"Unit Price: {product.UnitPrice:C2}");
-                Console.WriteLine($"Units in Stock: {product.UnitsInStock}");
-                Console.WriteLine($"Units on Order: {product.UnitsOnOrder}");
-                Console.WriteLine($"Reorder Level: {product.ReorderLevel}");
-                Console.WriteLine(product.Discontinued ? "Active" : "Discontinued");
+                // Got typeof(Product).GetProperties() and prop.GetValue(product) from:
+                // https://www.codeproject.com/Articles/667438/How-to-iterate-through-all-properties-of-a-class
+                var properties = typeof(Product).GetProperties();
+                foreach (var prop in properties)
+                {
+                    // Store as variable to not have to constantly get value
+                    var value = prop.GetValue(product);
+                    if (prop.Name == "UnitPrice" && value != null)
+                    {
+                        Console.WriteLine($"{prop.Name}: {value:C2}");
+                    }
+                    else if (prop.Name == "Category" && product.Category != null)
+                    {
+                        // Cast value to Category to get object's properties
+                        Category category = (Category)value!;
+                        Console.WriteLine($"{prop.Name}: {category.CategoryName}");
+                    }
+                    else if (prop.Name == "Supplier" && product.SupplierId != null)
+                    {
+                        // Cast value to Supplier to get object's properties
+                        Supplier supplier = (Supplier)value!;
+                        Console.WriteLine($"{prop.Name}: {supplier.CompanyName}");
+                    }
+                    // I wasn't sure how to handle order details, so I printed all fields in order details ICollection
+                    else if (prop.Name == "OrderDetails")
+                    {
+                        // Vast value to ICollection<OrderDetail> to get object's properties
+                        var orderDetails = (ICollection<OrderDetail>)value!;
+                        if (orderDetails.Count == 0)
+                        {
+                            Console.WriteLine($"{prop.Name}: No orders found");
+                        }
+                        else
+                        {
+                            Console.WriteLine($"{prop.Name}: {orderDetails.Count} Orders");
+                            Console.ForegroundColor = ConsoleColor.Blue;
+                            foreach (var detail in orderDetails)
+                            {
+                                Console.WriteLine($"\tOrder #{detail.OrderId}:");
+                                Console.WriteLine($"\t\tQuantity: {detail.Quantity}");
+                                Console.WriteLine($"\t\tUnit Price: {detail.UnitPrice:C2}");
+                                Console.WriteLine($"\t\tDiscount: {detail.Discount:P0}");
+                            }
+                            Console.ForegroundColor = ConsoleColor.Green;
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine($"{prop.Name}: {value}");
+                    }
+                }
                 Console.ForegroundColor = ConsoleColor.White;
             }
         }
