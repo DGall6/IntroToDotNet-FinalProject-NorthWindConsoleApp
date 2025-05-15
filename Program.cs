@@ -320,12 +320,12 @@ do
         logger.Info($"Option {displayChoice} selected");
 
         var db = new DataContext();
-        var query = db.Products.OrderBy(p => p.ProductName);
+        var query = db.Products.OrderBy(p => p.ProductId);
 
         if (displayChoice == "1")
         {
             // Display All
-            Console.ForegroundColor = ConsoleColor.Magenta;
+            Console.ForegroundColor = ConsoleColor.Green;
             foreach (var item in query)
             {
                 Console.WriteLine($"\t{item.ProductName}");
@@ -335,7 +335,7 @@ do
         else if (displayChoice == "2")
         {
             // Display Active
-            Console.ForegroundColor = ConsoleColor.Magenta;
+            Console.ForegroundColor = ConsoleColor.Green;
             foreach (var item in query)
             {
                 if (!item.Discontinued)
@@ -348,7 +348,7 @@ do
         else if (displayChoice == "3")
         {
             // Display discontinued
-            Console.ForegroundColor = ConsoleColor.Magenta;
+            Console.ForegroundColor = ConsoleColor.Green;
             foreach (var item in query)
             {
                 if (item.Discontinued)
@@ -448,14 +448,14 @@ do
                 Console.ForegroundColor = ConsoleColor.White;
             }
         }
-        else if (choice == "9")
-        {
-            // Edit Product
-        }
         else
         {
-            logger.Error($"Option {productDisplayChoice} is invalid");
+            logger.Error($"Option {productDisplayChoice} is Invalid");
         }
+    }
+    else if (choice == "9")
+    {
+        // Edit Product
     }
     else if (string.IsNullOrEmpty(choice))
     {
