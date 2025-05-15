@@ -12,30 +12,36 @@ logger.Info("Program started");
 
 do
 {
+    // Done
     Console.WriteLine("1) Display Categories");
+    // Done
     Console.WriteLine("2) Add Category");
+    // Done
     Console.WriteLine("3) Display Category and related active products");
+    // Done
     Console.WriteLine("4) Display all Categories and their related active products");
+    // TODO
     Console.WriteLine("5) Edit Category");
+    // Done
     Console.WriteLine("6) Add Product");
-    Console.WriteLine("7) Edit Product");
-    Console.WriteLine("8) Display Products");
-    Console.WriteLine("9) Display Specific Product Information");
+    // Done
+    Console.WriteLine("7) Display Products");
+    // Done
+    Console.WriteLine("8) Display Specific Product Information");
+    // TODO
+    Console.WriteLine("9) Edit Product");
+    // Done
     Console.WriteLine("Enter to quit");
+
     string? choice = Console.ReadLine();
     Console.Clear();
-    logger.Info("Option {choice} selected", choice);
+    logger.Info($"Option {choice} selected");
 
     if (choice == "1")
     {
         // display categories
-        var configuration = new ConfigurationBuilder()
-            .AddJsonFile($"appsettings.json");
-
-        var config = configuration.Build();
-
         var db = new DataContext();
-        var query = db.Categories.OrderBy(p => p.CategoryName);
+        var query = db.Categories.OrderBy(p => p.CategoryId);
 
         Console.ForegroundColor = ConsoleColor.DarkRed;
         Console.WriteLine($"{query.Count()} records returned");
@@ -85,6 +91,7 @@ do
     }
     else if (choice == "3")
     {
+        // Display 1 Category and related active products
         var db = new DataContext();
         var query = db.Categories.OrderBy(p => p.CategoryId);
 
@@ -116,12 +123,13 @@ do
         }
         else
         {
-            logger.Error("Category ID {userCategoryIdChoice} is Invalid", userCategoryIdChoice);
+            logger.Error($"Category ID {userCategoryIdChoice} is Invalid");
         }
         Console.ForegroundColor = ConsoleColor.White;
     }
     else if (choice == "4")
     {
+        // Display all Categories and their related active products
         var db = new DataContext();
         var query = db.Categories.Include("Products").OrderBy(p => p.CategoryId);
         foreach (var item in query)
@@ -143,13 +151,8 @@ do
     {
         // Edit Category
         // Display categories
-        var configuration = new ConfigurationBuilder()
-            .AddJsonFile($"appsettings.json");
-
-        var config = configuration.Build();
-
         var db = new DataContext();
-        var query = db.Categories.OrderBy(p => p.CategoryName);
+        var query = db.Categories.OrderBy(p => p.CategoryId);
 
         Console.WriteLine("Select the ID of the category to edit");
         Console.ForegroundColor = ConsoleColor.Magenta;
@@ -159,8 +162,92 @@ do
         }
         Console.ForegroundColor = ConsoleColor.White;
 
-        // TODO: Prompt user for ID, find Category, ask what to edit, then edit
-
+        // TODO: store user input, find Category, ask what to edit, then edit
+        string userCategoryIdChoice = Console.ReadLine()!;
+        if (int.TryParse(userCategoryIdChoice, out int id))
+        {
+            Console.Clear();
+            logger.Info($"CategoryId {id} selected");
+            if (query.Any(c => c.CategoryId == id))
+            {
+                Category category = db.Categories.FirstOrDefault(c => c.CategoryId == id)!;
+                Console.WriteLine("Select the Property to edit");
+                Console.WriteLine("1) Category Name");
+                Console.WriteLine("2) Category Description");
+                Console.WriteLine("3) Category Name and Category Description");
+                string userCategoryPropertyChoice = Console.ReadLine()!;
+                if (userCategoryPropertyChoice == "1")
+                {
+                    Console.WriteLine("Enter new unique category name");
+                    string userCategoryName = Console.ReadLine()!;
+                    if (db.Categories.Any(c => c.CategoryName == userCategoryName) || string.IsNullOrEmpty(userCategoryName))
+                    {
+                        logger.Error(string.IsNullOrEmpty(userCategoryName) ? "Category name cannot be blank" : $"Category {userCategoryName} already exists");
+                    }
+                    else
+                    {
+                        category.CategoryName = userCategoryName;
+                        db.SaveChanges();
+                        logger.Info($"Category {category.CategoryName} successfully changed");
+                    }
+                }
+                else if (userCategoryPropertyChoice == "2")
+                {
+                    Console.WriteLine("Enter new category description");
+                    string userCategoryDescription = Console.ReadLine()!;
+                    if (string.IsNullOrEmpty(userCategoryDescription))
+                    {
+                        logger.Error("Description cannot be blank");
+                    }
+                    else
+                    {
+                        category.Description = userCategoryDescription;
+                        db.SaveChanges();
+                        logger.Info($"Category description successfully changed to {category.Description}");
+                    }
+                }
+                else if (userCategoryPropertyChoice == "3")
+                {
+                    Console.WriteLine("Enter new unique category name");
+                    string userCategoryName = Console.ReadLine()!;
+                    if (db.Categories.Any(c => c.CategoryName == userCategoryName) || string.IsNullOrEmpty(userCategoryName))
+                    {
+                        logger.Error(string.IsNullOrEmpty(userCategoryName) ? "Category name cannot be blank" : $"Category {userCategoryName} already exists");
+                    }
+                    else
+                    {
+                        logger.Info($"Category name {userCategoryName} is valid");
+                        Console.WriteLine("Enter new category description");
+                        string userCategoryDescription = Console.ReadLine()!;
+                        if (string.IsNullOrEmpty(userCategoryDescription))
+                        {
+                            logger.Error("Description cannot be blank");
+                        }
+                        else
+                        {
+                            logger.Info($"Category Description {category.Description} is valid");
+                            category.CategoryName = userCategoryName;
+                            category.Description = userCategoryDescription;
+                            db.SaveChanges();
+                            logger.Info($"Category successfully changed to {category.CategoryName} - {category.Description}");
+                        }
+                    }
+                }
+                else
+                {
+                    logger.Error($"Option {userCategoryPropertyChoice} is Invalid");
+                }
+            }
+            else
+            {
+                logger.Error($"Category ID {id} does not exist");
+            }
+        }
+        else
+        {
+            logger.Error($"Category ID {userCategoryIdChoice} is Invalid");
+        }
+        Console.ForegroundColor = ConsoleColor.White;
     }
     else if (choice == "6")
     {
@@ -219,14 +306,10 @@ do
         }
         else
         {
-            logger.Error("Category ID {userProductIdChoice} is Invalid", userProductIdChoice);
+            logger.Error($"Category ID {userProductIdChoice} is Invalid");
         }
     }
     else if (choice == "7")
-    {
-        // Edit Product
-    }
-    else if (choice == "8")
     {
         // Display products
         Console.WriteLine("Select display option");
@@ -234,7 +317,7 @@ do
         Console.WriteLine("2) All Active Products");
         Console.WriteLine("3) All Discontinued Products");
         string displayChoice = Console.ReadLine()!;
-        logger.Info("Option {displayChoice} selected", displayChoice);
+        logger.Info($"Option {displayChoice} selected");
 
         var db = new DataContext();
         var query = db.Products.OrderBy(p => p.ProductName);
@@ -277,10 +360,10 @@ do
         }
         else
         {
-            logger.Error("Option {displayChoice} is invalid", displayChoice);
+            logger.Error($"Option {displayChoice} is invalid");
         }
     }
-    else if (choice == "9")
+    else if (choice == "8")
     {
         // Display specific product
         var db = new DataContext();
@@ -297,11 +380,11 @@ do
         string productDisplayChoice = Console.ReadLine()!;
         if (int.TryParse(productDisplayChoice, out int id))
         {
-            logger.Info("Product #{id} selected", id);
+            logger.Info($"Product #{id} selected");
             Product? product = db.Products.FirstOrDefault(p => p.ProductId == id)!;
             if (product == null)
             {
-                logger.Error("Product #{productDisplayChoice} not found", productDisplayChoice);
+                logger.Error($"Product #{productDisplayChoice} not found");
             }
             else
             {
@@ -319,9 +402,13 @@ do
                 Console.ForegroundColor = ConsoleColor.White;
             }
         }
+        else if (choice == "9")
+        {
+            // Edit Product
+        }
         else
         {
-            logger.Error("Option {productDisplayChoice} is invalid", productDisplayChoice);
+            logger.Error($"Option {productDisplayChoice} is invalid");
         }
     }
     else if (string.IsNullOrEmpty(choice))
