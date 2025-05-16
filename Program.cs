@@ -10,25 +10,15 @@ logger.Info("Program started");
 
 do
 {
-    // Done
     Console.WriteLine("1) Display Categories");
-    // Done
     Console.WriteLine("2) Add Category");
-    // Done
     Console.WriteLine("3) Display Category and related active products");
-    // Done
     Console.WriteLine("4) Display all Categories and their related active products");
-    // TODO
     Console.WriteLine("5) Edit Category");
-    // Done
     Console.WriteLine("6) Add Product");
-    // Done
     Console.WriteLine("7) Display Products");
-    // Done
     Console.WriteLine("8) Display Specific Product Information");
-    // TODO
     Console.WriteLine("9) Edit Product");
-    // Done
     Console.WriteLine("Enter to quit");
 
     string? choice = Console.ReadLine();
@@ -160,7 +150,6 @@ do
         }
         Console.ForegroundColor = ConsoleColor.White;
 
-        // TODO: store user input, find Category, ask what to edit, then edit
         string userCategoryIdChoice = Console.ReadLine()!;
         if (int.TryParse(userCategoryIdChoice, out int id))
         {
@@ -174,6 +163,7 @@ do
                 Console.WriteLine("2) Category Description");
                 Console.WriteLine("3) Category Name and Category Description");
                 string userCategoryPropertyChoice = Console.ReadLine()!;
+                Console.Clear();
                 logger.Info($"Option {userCategoryPropertyChoice} selected");
                 if (userCategoryPropertyChoice == "1")
                 {
@@ -316,6 +306,7 @@ do
         Console.WriteLine("2) All Active Products");
         Console.WriteLine("3) All Discontinued Products");
         string displayChoice = Console.ReadLine()!;
+        Console.Clear();
         logger.Info($"Option {displayChoice} selected");
 
         var db = new DataContext();
@@ -392,6 +383,7 @@ do
             }
             else
             {
+                Console.Clear();
                 Console.ForegroundColor = ConsoleColor.Green;
                 // Got typeof(Product).GetProperties() and prop.GetValue(product) from:
                 // https://www.codeproject.com/Articles/667438/How-to-iterate-through-all-properties-of-a-class
@@ -481,6 +473,7 @@ do
             }
             else
             {
+                Console.Clear();
                 Console.WriteLine("Select the property you want to edit");
                 Console.WriteLine("1) Product Name");
                 Console.WriteLine("2) Supplier");
@@ -493,6 +486,7 @@ do
                 Console.WriteLine("9) Discontinued Status");
 
                 string productPropertyChoice = Console.ReadLine()!;
+                Console.Clear();
                 logger.Info($"Option {productPropertyChoice} Selected");
                 if (productPropertyChoice == "1")
                 {
