@@ -96,17 +96,24 @@ do
             Console.Clear();
             logger.Info($"CategoryId {id} selected");
             Category category = db.Categories.Include("Products").FirstOrDefault(c => c.CategoryId == id)!;
-            Console.ForegroundColor = ConsoleColor.DarkRed;
-            Console.WriteLine($"{category.Products.Count} products returned");
-            Console.ForegroundColor = ConsoleColor.Magenta;
-            Console.WriteLine($"{category.CategoryName} - {category.Description}");
-            Console.ForegroundColor = ConsoleColor.Green;
-            foreach (Product p in category.Products)
+            if (category != null)
             {
-                if (!p.Discontinued)
+                Console.ForegroundColor = ConsoleColor.DarkRed;
+                Console.WriteLine($"{category.Products.Count} products returned");
+                Console.ForegroundColor = ConsoleColor.Magenta;
+                Console.WriteLine($"{category.CategoryName} - {category.Description}");
+                Console.ForegroundColor = ConsoleColor.Green;
+                foreach (Product p in category.Products)
                 {
-                    Console.WriteLine($"\t{p.ProductName}");
+                    if (!p.Discontinued)
+                    {
+                        Console.WriteLine($"\t{p.ProductName}");
+                    }
                 }
+            }
+            else
+            {
+                logger.Error($"Category #'{id}' Not Found");
             }
         }
         else
@@ -214,7 +221,7 @@ do
                         }
                         else
                         {
-                            logger.Info($"Category Description {category.Description} is valid");
+                            logger.Info($"Category Description {userCategoryDescription} is valid");
                             category.CategoryName = userCategoryName;
                             category.Description = userCategoryDescription;
                             db.SaveChanges();
@@ -282,7 +289,7 @@ do
                 {
                     logger.Info("Validation passed");
                     db.AddProduct(product);
-                    logger.Info($"Product {product.ProductName} successfully added to {product.Category}");
+                    logger.Info($"Product {product.ProductName} successfully added to {product.Category.CategoryName}");
                 }
             }
             if (!isValid)
@@ -318,7 +325,7 @@ do
             Console.ForegroundColor = ConsoleColor.Green;
             foreach (var item in query)
             {
-                Console.WriteLine($"\t{item.ProductName}");
+                Console.WriteLine($"\t{item.ProductId}) {item.ProductName}");
             }
             Console.ForegroundColor = ConsoleColor.White;
         }
@@ -330,7 +337,7 @@ do
             {
                 if (!item.Discontinued)
                 {
-                    Console.WriteLine($"\t{item.ProductName}");
+                    Console.WriteLine($"\t{item.ProductId}) {item.ProductName}");
                 }
             }
             Console.ForegroundColor = ConsoleColor.White;
@@ -343,7 +350,7 @@ do
             {
                 if (item.Discontinued)
                 {
-                    Console.WriteLine($"\t{item.ProductName}");
+                    Console.WriteLine($"\t{item.ProductId}) {item.ProductName}");
                 }
             }
             Console.ForegroundColor = ConsoleColor.White;
@@ -370,7 +377,6 @@ do
         string productDisplayChoice = Console.ReadLine()!;
         if (int.TryParse(productDisplayChoice, out int id))
         {
-            logger.Info($"Product #{id} selected");
             Product? product = db.Products
             // include fields that contain another object
                 .Include(p => p.Category)
@@ -383,7 +389,7 @@ do
             }
             else
             {
-                Console.Clear();
+                logger.Info($"Product #{id} selected\n");
                 Console.ForegroundColor = ConsoleColor.Green;
                 // Got typeof(Product).GetProperties() and prop.GetValue(product) from:
                 // https://www.codeproject.com/Articles/667438/How-to-iterate-through-all-properties-of-a-class
@@ -580,7 +586,7 @@ do
                     // Edit Quantity string
                     Console.WriteLine("Enter the new Quantity per Unit");
                     string userQuantity = Console.ReadLine()!;
-                    logger.Info($"Unit Price {userQuantity} Entered");
+                    logger.Info($"Quantity {userQuantity} Entered");
                     if (string.IsNullOrEmpty(userQuantity))
                     {
                         logger.Error("Quantity per Unit cannot be empty");
@@ -699,6 +705,10 @@ do
     else if (string.IsNullOrEmpty(choice))
     {
         break;
+    }
+    else
+    {
+        logger.Error($"User choice {choice} is Invalid");
     }
     Console.WriteLine();
 } while (true);
